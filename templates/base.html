@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Speza - Smart Expense Tracker{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Page Loader Styles -->
+    <style>
+        /* ======= Full-page Flex Layout (preferred) ======= */
+        /* Ensure no browser default gaps */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --green: #00C896;
+            --light-bg: #F9FAFB;
+            --light-text: #1E1E1E;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--light-bg);
+            color: var(--light-text);
+        }
+
+
+
+
+        /* -------- PAGE LOADER FIXED & CENTERED -------- */
+        #pageLoader {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            /* <— keeps perfect center */
+            justify-content: center;
+            flex-direction: column;
+            background-color: #f9fafb;
+            z-index: 5000;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        #pageLoader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .loader-logo img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .loader-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .loader-bar {
+            width: 160px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--green);
+            animation: loading 2.4s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0;
+            }
+
+            50% {
+                width: 100%;
+            }
+
+            100% {
+                width: 0;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Page Loader -->
+    <div id="pageLoader">
+        <div class="loader-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Speza Logo" />
+            <h2 class="loader-text">Speza</h2>
+        </div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav data-aos="fade-down">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Speza Logo" />
+            Speza
+        </div>
+
+        <!-- Hamburger -->
+        <div class="hamburger" id="hamburger">
+            <span></span><span></span><span></span>
+        </div>
+
+        <!-- Nav Menu -->
+        <ul id="navMenu" class="mobile-hidden">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('add_expense') }}">Add Transaction</a></li>
+            <li><a href="{{ url_for('transactions') }}">Transactions</a></li>
+            <li><a href="{{ url_for('settings') }}">Settings</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main data-animate>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <p>© {{ current_year | default(2025) }} Speza — Track Smart. Spend Smarter.</p>
+        </div>
+    </footer>
+
+
+    <!-- JS Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    <!-- Init AOS + GSAP -->
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        window.addEventListener("load", () => {
+            gsap.to("[data-animate]", {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: "power2.out"
+            });
+        });
+    </script>
+
+    <!-- Apply Saved Theme Color -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedColor = localStorage.getItem("speza-accent");
+            if (savedColor) {
+                document.documentElement.style.setProperty("--green", savedColor);
+
+                document.querySelector("nav").style.backgroundColor = savedColor;
+                document.querySelector("footer").style.backgroundColor = savedColor;
+            }
+        });
+    </script>
+
+    <!-- Loader Hide -->
+    <script>
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("pageLoader");
+            setTimeout(() => loader.classList.add("hidden"), 700);
+        });
+    </script>
+
+    <!-- Hamburger Toggle -->
+    <script>
+        const hamburger = document.getElementById("hamburger");
+        const navMenu = document.getElementById("navMenu");
+
+        hamburger.addEventListener("click", () => {
+            navMenu.classList.toggle("mobile-active");
+        });
+    </script>
+
+    <!-- Plotly Responsiveness -->
+    <script>
+        window.addEventListener("resize", () => {
+            document.querySelectorAll(".js-plotly-plot").forEach(plot => {
+                Plotly.Plots.resize(plot);
+            });
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

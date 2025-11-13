@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Speza | Settings{% endblock %}
+
+{% block content %}
+
+<section class="settings-header" data-aos="fade-up">
+    <h1 class="page-title">Settings & Preferences</h1>
+    <p class="page-subtitle">
+        Customize your Speza experience and manage your data preferences.
+    </p>
+</section>
+
+<section class="settings-section" data-aos="fade-up">
+
+    <!-- Clear Data -->
+    <div class="settings-card" data-aos="zoom-in">
+        <div class="settings-info">
+            <h3>Clear Financial Data</h3>
+            <p>Remove all stored transactions permanently.</p>
+        </div>
+        <button id="clearDataBtn" class="delete-btn">Clear All Data</button>
+    </div>
+
+    <!-- Accent Color -->
+    <div class="settings-card" data-aos="zoom-in" data-aos-delay="100">
+        <div class="settings-info">
+            <h3>Accent Color</h3>
+            <p>Choose your preferred theme color for Speza.</p>
+        </div>
+        <input type="color" id="accentColorPicker" value="#00C896" class="color-picker">
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* =======================
+       CLEAR ALL DATA
+    ========================== */
+    const clearBtn = document.getElementById("clearDataBtn");
+
+    clearBtn.addEventListener("click", async () => {
+        const ok = confirm("Are you sure? This will permanently delete all transactions.");
+        if (!ok) return;
+
+        try {
+            const res = await fetch("/clear_data", { method: "POST" });
+
+            if (res.ok) {
+                alert("All data cleared!");
+                window.location.reload();
+            } else {
+                alert("Failed to clear data.");
+            }
+        } catch (err) {
+            alert("Error clearing data.");
+        }
+    });
+
+
+    /* =======================
+       ACCENT COLOR PICKER
+    ========================== */
+    const picker = document.getElementById("accentColorPicker");
+
+    // Apply saved color
+    const saved = localStorage.getItem("speza-accent");
+    if (saved) {
+        picker.value = saved;
+        document.documentElement.style.setProperty("--green", saved);
+    }
+
+    // Change live
+    picker.addEventListener("input", (e) => {
+        const c = e.target.value;
+
+        // Save & apply global theme color
+        localStorage.setItem("speza-accent", c);
+        document.documentElement.style.setProperty("--green", c);
+
+        // Update navbar/footer instantly
+        const nav = document.querySelector("nav");
+        const footer = document.querySelector("footer");
+        if (nav) nav.style.backgroundColor = c;
+        if (footer) footer.style.backgroundColor = c;
+
+        // Update CTA buttons live
+        document.querySelectorAll(".cta-btn").forEach(btn => {
+            btn.style.backgroundColor = c;
+        });
+    });
+});
+</script>
+
+
+<style>
+/* ---------- SETTINGS PAGE ---------- */
+
+.settings-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.settings-section {
+    max-width: 800px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.settings-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 24px 28px;
+    border-radius: 16px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.07);
+    transition: 0.3s ease;
+}
+
+.settings-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+}
+
+.settings-info h3 {
+    margin: 0 0 6px;
+    color: var(--green);
+}
+
+.settings-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* Buttons */
+.delete-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #FF6B6B;
+    color: white;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    background-color: #e85a5a;
+}
+
+.color-picker {
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .settings-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 18px;
+    }
+}
+</style>
+
+{% endblock %}

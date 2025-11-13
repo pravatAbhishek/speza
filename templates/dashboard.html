@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+{% block title %}Speza | Dashboard{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-header" data-aos="fade-up">
+    <h1 class="page-title">Your Financial Overview</h1>
+    <p class="page-subtitle">
+        Visualize your income, expenses, and savings in one dynamic dashboard.
+    </p>
+</section>
+
+<!-- Metrics Summary Cards -->
+<section class="metrics" data-aos="fade-up">
+    <div class="metric-card" data-aos="zoom-in">
+        <h3>Total Income</h3>
+        <p class="metric-value">₹{{ total_income | round(2) }}</p>
+    </div>
+
+    <div class="metric-card" data-aos="zoom-in" data-aos-delay="100">
+        <h3>Total Expense</h3>
+        <p class="metric-value">₹{{ total_expense | round(2) }}</p>
+    </div>
+
+    <div class="metric-card" data-aos="zoom-in" data-aos-delay="200">
+        <h3>Balance</h3>
+        <p class="metric-value">₹{{ balance | round(2) }}</p>
+    </div>
+</section>
+
+<!-- Balance Overview Gauge -->
+<section class="balance-overview" data-aos="fade-up">
+    <h2>Balance Overview</h2>
+    <div id="gaugeWrapper" style="position: relative; width: 100%; max-width: 350px; height: 200px; margin: 0 auto;">
+        <canvas id="balanceGauge"></canvas>
+    </div>
+
+    <p class="balance-text">Your expense-to-income ratio</p>
+</section>
+
+<!-- Expense Chart Section -->
+<section class="charts" data-aos="fade-up">
+    <div class="chart-card" data-aos="fade-up">
+        <h2>Expense Breakdown by Category</h2>
+        <div class="chart-container plotly-wrapper">
+            {{ chart | safe }}
+        </div>
+
+    </div>
+</section>
+
+
+<!-- Monthly Income vs Expense Trend -->
+<section class="monthly-expense-section" data-aos="fade-up">
+    <h2>Monthly Income vs Expense</h2>
+    <p class="subtext">Compare how much you earn and spend each month.</p>
+    <div class="chart-wrapper">
+        <canvas id="monthlyCompareChart"></canvas>
+    </div>
+
+</section>
+
+
+
+
+<!-- Financial Mood Section -->
+<section class="mood-section" data-aos="fade-up">
+    <h2>Your Financial Mood</h2>
+    <div class="mood-card {{ mood.status }}">
+        <h3 class="mood-text">{{ mood.text }}</h3>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const canvas = document.getElementById("balanceGauge");
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        const income = parseFloat("{{ total_income | default(0) | round(2) }}");
+        const expense = parseFloat("{{ total_expense | default(0) | round(2) }}");
+
+        // Calculate expense-to-income percentage
+        const ratio = income > 0 ? (expense / income) * 100 : (expense > 0 ? 100 : 0);
+        const percentage = Math.min(Math.max(ratio, 0), 100);
+
+        // === Retrieve primary color from global variable ===
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryColor = rootStyles.getPropertyValue("--green").trim() || "#00C896";
+
+        // Determine mood-based accent color
+        let gaugeColor = primaryColor;
+        if (expense > income) gaugeColor = "#FF6B6B";
+        else if (Math.abs(income - expense) < 2000) gaugeColor = "#FFD166";
+
+        // Create dynamic gradient for the gauge
+        const gradient = ctx.createLinearGradient(0, 0, 300, 0);
+        gradient.addColorStop(0, primaryColor);
+        gradient.addColorStop(1, primaryColor);
+
+        // === Chart.js Doughnut Gauge ===
+        new Chart(canvas, {
+            type: "doughnut",
+            data: {
+                datasets: [{
+                    data: [percentage, 100 - percentage],
+                    backgroundColor: [gradient, "#EAEAEA"],
+                    borderWidth: 0,
+                    cutout: "75%",
+                }],
+            },
+            options: {
+                rotation: -90,
+                circumference: 180,
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false },
+                },
+                animation: { duration: 1200, easing: "easeOutQuart" },
+            },
+        });
+
+        // === Center Animated Percentage Text ===
+        const wrapper = document.getElementById("gaugeWrapper");
+        const centerText = document.createElement("div");
+        centerText.style.position = "absolute";
+        centerText.style.top = "50%";
+        centerText.style.left = "50%";
+        centerText.style.transform = "translate(-50%, -50%)";
+        centerText.style.fontWeight = "700";
+        centerText.style.fontSize = "1.5rem";
+        centerText.style.color = gaugeColor;
+        centerText.style.pointerEvents = "none";
+        wrapper.appendChild(centerText);
+
+        // Smooth counting animation
+        let current = 0;
+        const target = percentage;
+        const step = target / 40;
+
+        function animateText() {
+            current += step;
+            if (current < target) {
+                centerText.textContent = current.toFixed(1) + "%";
+                requestAnimationFrame(animateText);
+            } else {
+                centerText.textContent = target.toFixed(1) + "%";
+            }
+        }
+        animateText();
+
+        // === Update Plotly chart accent color ===
+        const plotlyFrames = document.querySelectorAll(".js-plotly-plot");
+        if (plotlyFrames.length > 0) {
+            plotlyFrames.forEach(frame => {
+                const plotlyData = frame.data || [];
+                plotlyData.forEach(trace => {
+                    if (trace.marker && trace.marker.colors) {
+                        trace.marker.colors = plotlyData.map(() => primaryColor);
+                    }
+                });
+            });
+        }
+    });
+</script>
+
+<script>
+    // === Monthly Income vs Expense Chart ===
+    document.addEventListener("DOMContentLoaded", () => {
+        const ctxCompare = document.getElementById("monthlyCompareChart");
+        if (!ctxCompare) return;
+
+        const monthLabels = JSON.parse('{{ monthly_labels | safe }}');
+        const incomeValues = JSON.parse('{{ monthly_income | safe }}');
+        const expenseValues = JSON.parse('{{ monthly_expense | safe }}');
+
+        if (monthLabels.length === 0) {
+            ctxCompare.parentNode.innerHTML = "<p style='text-align:center; color:#666;'>No monthly data available.</p>";
+            return;
+        }
+
+        new Chart(ctxCompare, {
+            type: "bar",
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: "Income (₹)",
+                        data: incomeValues,
+                        backgroundColor: "rgba(0, 200, 150, 0.8)",
+                        borderRadius: 8,
+                        barPercentage: 0.45
+                    },
+                    {
+                        label: "Expense (₹)",
+                        data: expenseValues,
+                        backgroundColor: "rgba(255, 107, 107, 0.8)",
+                        borderRadius: 8,
+                        barPercentage: 0.45
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: "index" },
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "#333",
+                            font: { size: 13, weight: "600" }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgba(0,0,0,0.7)",
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 12 }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#333", font: { size: 12 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(0,0,0,0.05)" },
+                        ticks: { color: "#333", font: { size: 12 } }
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: "easeOutQuart"
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    /* ---- Dashboard Styling ---- */
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-title {
+        color: var(--green);
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .metrics {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        width: 240px;
+        text-align: center;
+        padding: 24px 0;
+        transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-card h3 {
+        color: #777;
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .metric-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--green);
+    }
+
+    /* Gauge Card */
+    .balance-overview {
+        text-align: center;
+        margin-top: 60px;
+        background: white;
+        border-radius: 16px;
+        padding: 40px 20px 70px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        position: relative;
+    }
+
+    /* Expense Chart Card */
+    .charts {
+        margin-top: 60px;
+    }
+
+    .chart-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        margin-bottom: 40px;
+    }
+
+    .chart-card h2 {
+        font-size: 1.3rem;
+        color: var(--green);
+        margin-bottom: 20px;
+    }
+
+    .mood-section {
+        text-align: center;
+        margin-top: 60px;
+        padding-bottom: 40px;
+    }
+
+    .mood-card {
+        display: inline-block;
+        border-radius: 12px;
+        padding: 20px 40px;
+        background-color: #f4fdf9;
+        border: 2px solid var(--green);
+        box-shadow: 0 4px 14px rgba(0, 200, 150, 0.2);
+    }
+
+    .mood-card.good .mood-text {
+        color: #00C896;
+    }
+
+    .mood-card.neutral .mood-text {
+        color: #FFD166;
+    }
+
+    .mood-card.bad .mood-text {
+        color: #FF6B6B;
+    }
+
+    .mood-text {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+</style>
+
+<style>
+    .monthly-expense-section {
+        margin-top: 80px;
+        background: white;
+        border-radius: 16px;
+        padding: 40px 30px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .monthly-expense-section h2 {
+        text-align: center;
+        color: var(--green);
+        margin-bottom: 10px;
+    }
+
+    .monthly-expense-section .subtext {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+    }
+</style>
+
+<style>
+    #balanceGauge {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 650px;
+        height: 350px;
+        margin: auto;
+    }
+
+    #monthlyCompareChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Make Plotly Pie Chart responsive */
+    .js-plotly-plot,
+    .plot-container {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 350px !important;
+    }
+
+    .plotly-wrapper {
+        width: 100%;
+        overflow: hidden;
+    }
+</style>
+
+{% endblock %}

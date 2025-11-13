@@ -1,0 +1,281 @@
+/* =====================================================
+   SPEZA GLOBAL STYLESHEET (LIGHT MODE ONLY)
+===================================================== */
+
+/* -------- Root Variables -------- */
+:root {
+    --green: #00C896;
+    --text-dark: #1E1E1E;
+    --text-light: #555;
+    --bg-light: #F9FAFB;
+    --white: #FFFFFF;
+}
+
+/* -------- Base Reset -------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    scroll-behavior: smooth;
+}
+
+main {
+    min-height: calc(100vh - 160px); /* keeps footer at bottom */
+    padding: 40px 8%;
+} 
+
+
+
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+nav {
+    background-color: var(--green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+nav .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+nav .logo img {
+    height: 36px;
+}
+
+/* MENU (Desktop) */
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 24px;
+}
+
+nav ul li a {
+    color: white;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+nav ul li a:hover {
+    opacity: 0.8;
+}
+
+.plotly-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;      /* centers chart */
+}
+
+
+/* Hamburger (Hidden on Desktop) */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 5px;
+    transition: 0.3s ease;
+}
+
+/* Dropdown Animation */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer {
+    background-color: var(--green);
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+/* Animation Target */
+[data-animate] {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: #a8a8a8; }
+
+/* =====================================================
+   RESPONSIVE DESIGN
+===================================================== */
+
+/* ======= TABLETS / SMALL LAPTOPS ======= */
+@media (max-width: 1024px) {
+    main { padding: 20px 5%; }
+
+    .metrics { flex-wrap: wrap; gap: 16px; }
+    .metric-card { width: 45%; }
+
+    .feature-grid { flex-wrap: wrap; }
+    .feature-card { width: 45%; }
+}
+
+/* ======= MOBILE (MENU + LAYOUT) ======= */
+@media (max-width: 768px) {
+
+    /* Show hamburger */
+    .hamburger {
+        display: flex;
+    }
+
+    /* Hide default nav menu */
+    nav ul {
+        display: none;
+    }
+
+    /* Mobile dropdown menu */
+    nav ul.mobile-active {
+        display: flex !important;
+        flex-direction: column;
+        gap: 14px;
+        width: 100%;
+        padding: 18px 0;
+        background: var(--green);
+        animation: slideDown 0.3s ease;
+    }
+
+    nav {
+        padding: 14px 20px;
+        flex-wrap: wrap;
+    }
+
+    nav ul li a {
+        padding-left: 10px;
+    }
+
+    /* Center hero section + remove horizontal issues */
+    main {
+        padding: 20px 5%;
+    }
+
+    .hero-section {
+        padding: 40px 20px !important;
+        text-align: center;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .hero-image {
+        margin: 0 auto;
+    }
+
+    .metrics, .feature-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .metric-card, .feature-card {
+        width: 90%;
+    }
+
+    .form-section {
+        width: 95%;
+        padding: 30px 20px;
+    }
+
+    .chart-card {
+        padding: 20px;
+    }
+}
+
+/* ======= SMALL PHONES ======= */
+@media (max-width: 480px) {
+
+    h1, .page-title { font-size: 1.6rem; }
+    .hero-title { font-size: 2rem; }
+
+    .cta-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    footer {
+        font-size: 0.85rem;
+        padding: 15px;
+    }
+}
+
+/* ======= Fixed footer (fallback, guaranteed) ======= */
+
+/* Define footer height variable for easy tweaking */
+:root { --footer-height: 64px; /* adjust if your footer is taller */ }
+
+/* Pin footer to viewport bottom */
+footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--footer-height);
+  line-height: var(--footer-height);
+  z-index: 2000;
+  margin: 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* Make sure page content doesn't hide behind fixed footer */
+main {
+  /* leave a comfortable gap so content + charts never go beneath footer */
+  padding-bottom: calc(var(--footer-height) + 24px);
+}
+
+/* If you had a centered footer content, keep it inside footer */
+footer .footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* small screens: reduce footer height */
+@media (max-width: 480px) {
+  :root { --footer-height: 56px; }
+}

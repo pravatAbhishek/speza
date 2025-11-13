@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Speza | Add Transaction{% endblock %}
+
+{% block content %}
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for msg in messages %}
+        <div class="flash-message" data-aos="fade-down">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Add Transaction Form -->
+<section class="form-section" data-aos="fade-up">
+  <h1 class="page-title">Add a New Transaction</h1>
+  <p class="page-subtitle">Record your income or expenses to keep your balance updated.</p>
+
+  <form method="POST" action="{{ url_for('add_expense') }}" class="expense-form" data-aos="fade-up" data-aos-delay="100">
+
+    <!-- Transaction Type -->
+    <div class="form-group">
+      <label for="typeSelect">Transaction Type</label>
+      <select name="type" id="typeSelect" required>
+        <option value="Income">Income</option>
+        <option value="Expense">Expense</option>
+      </select>
+    </div>
+
+    <!-- Date -->
+    <div class="form-group">
+      <label for="date">Date</label>
+      <input type="date" name="date" required>
+    </div>
+
+    <!-- Category -->
+    <div class="form-group">
+      <label for="categorySelect">Category</label>
+      <select name="category" id="categorySelect" required></select>
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group">
+      <label for="amount">Amount (₹)</label>
+      <input type="number" name="amount" step="0.01" min="0" required>
+    </div>
+
+    <!-- Note -->
+    <div class="form-group">
+      <label for="note">Note</label>
+      <input type="text" name="note" placeholder="Enter short note">
+    </div>
+
+    <button type="submit" class="cta-btn">Save Transaction</button>
+  </form>
+</section>
+
+<!-- JavaScript: Category Switching + Default Notes -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const typeSelect = document.getElementById("typeSelect");
+    const categorySelect = document.getElementById("categorySelect");
+    const noteInput = document.querySelector("input[name='note']");
+
+    const categories = {
+        Income: ["Salary", "Freelance", "Investments", "Gifts", "Other"],
+        Expense: ["Bills", "Food", "Shopping", "Travel", "Health", "Entertainment", "Other"]
+    };
+
+    const defaultNotes = {
+        Salary: "Monthly salary",
+        Freelance: "Freelancing payment",
+        Investments: "Investment returns",
+        Gifts: "Received from someone",
+        Bills: "Monthly bills",
+        Food: "Meal or restaurant expense",
+        Shopping: "Shopping purchase",
+        Travel: "Travel or transport cost",
+        Health: "Medical or fitness expense",
+        Entertainment: "Movies or subscriptions",
+        Other: "General transaction"
+    };
+
+    function updateCategories(type) {
+        categorySelect.innerHTML = "";
+        categories[type].forEach(cat => {
+            const opt = document.createElement("option");
+            opt.value = opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+        updateDefaultNote();
+    }
+
+    function updateDefaultNote() {
+        const selected = categorySelect.value;
+        noteInput.value = defaultNotes[selected] || "General transaction";
+    }
+
+    // Initialize
+    updateCategories(typeSelect.value);
+
+    typeSelect.addEventListener("change", () => updateCategories(typeSelect.value));
+    categorySelect.addEventListener("change", updateDefaultNote);
+});
+</script>
+
+<!-- Styles -->
+<style>
+/* ---------- Add Transaction Page ---------- */
+
+.form-section {
+  max-width: 600px;
+  margin: 60px auto;
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.page-title {
+  color: var(--green);
+  margin-bottom: 10px;
+}
+
+.page-subtitle {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+}
+
+.expense-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+  display: block;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 5px rgba(0,200,150,0.2);
+  outline: none;
+}
+
+.cta-btn {
+  background-color: var(--green);
+  color: white;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cta-btn:hover {
+  background-color: #00b387;
+}
+
+.flash-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+}
+
+.flash-message {
+  background-color: var(--green);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  animation: fadeInOut 4s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+</style>
+
+{% endblock %}
