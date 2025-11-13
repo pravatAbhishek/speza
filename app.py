@@ -19,10 +19,10 @@ DATA_PATH = Path("data/expenses.csv")
 # --------------------------------
 # Ensure Data File Exists
 # --------------------------------
-DATA_DIR = os.path.join(os.getcwd(), "data")
-os.makedirs(DATA_DIR, exist_ok=True)
-DATA_PATH = os.path.join(DATA_DIR, "expenses.csv")
-
+if not DATA_PATH.exists() or DATA_PATH.stat().st_size == 0:
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame(columns=["Date", "Type", "Category", "Amount", "Note"])
+    df.to_csv(DATA_PATH, index=False)
 
 
 
@@ -225,4 +225,4 @@ def clear_data():
 # Run the App
 # --------------------------------
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
