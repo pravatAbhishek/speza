@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import pandas as pd
 from pathlib import Path
 import plotly.express as px
-import json
+import json, os
 # --------------------------------
 # App Initialization
 # --------------------------------
@@ -19,10 +19,12 @@ DATA_PATH = Path("data/expenses.csv")
 # --------------------------------
 # Ensure Data File Exists
 # --------------------------------
-if not DATA_PATH.exists() or DATA_PATH.stat().st_size == 0:
-    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame(columns=["Date", "Type", "Category", "Amount", "Note"])
-    df.to_csv(DATA_PATH, index=False)
+DATA_DIR = os.path.join(os.getcwd(), "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+DATA_PATH = os.path.join(DATA_DIR, "expenses.csv")
+
+
+
 
 # --------------------------------
 # Helper Functions
@@ -223,4 +225,4 @@ def clear_data():
 # Run the App
 # --------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
