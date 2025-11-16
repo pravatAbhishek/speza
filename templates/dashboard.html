@@ -173,74 +173,70 @@
 <script>
     // === Monthly Income vs Expense Chart ===
     document.addEventListener("DOMContentLoaded", () => {
-        const ctxCompare = document.getElementById("monthlyCompareChart");
-        if (!ctxCompare) return;
+    const ctxCompare = document.getElementById("monthlyCompareChart");
+    if (!ctxCompare) return;
 
-        const monthLabels = JSON.parse('{{ monthly_labels | safe }}');
-        const incomeValues = JSON.parse('{{ monthly_income | safe }}');
-        const expenseValues = JSON.parse('{{ monthly_expense | safe }}');
+    const monthLabels = JSON.parse('{{ monthly_labels | safe }}');
+    const incomeValues = JSON.parse('{{ monthly_income | safe }}');
+    const expenseValues = JSON.parse('{{ monthly_expense | safe }}');
 
-        if (monthLabels.length === 0) {
-            ctxCompare.parentNode.innerHTML = "<p style='text-align:center; color:#666;'>No monthly data available.</p>";
-            return;
-        }
+    // Responsive legend sizing
+    let legendFontSize = window.innerWidth < 480 ? 10 : 13;
+    let legendBoxSize  = window.innerWidth < 480 ? 10 : 14;
 
-        new Chart(ctxCompare, {
-            type: "bar",
-            data: {
-                labels: monthLabels,
-                datasets: [
-                    {
-                        label: "Income (₹)",
-                        data: incomeValues,
-                        backgroundColor: "rgba(0, 200, 150, 0.8)",
-                        borderRadius: 8,
-                        barPercentage: 0.45
-                    },
-                    {
-                        label: "Expense (₹)",
-                        data: expenseValues,
-                        backgroundColor: "rgba(255, 107, 107, 0.8)",
-                        borderRadius: 8,
-                        barPercentage: 0.45
+    new Chart(ctxCompare, {
+        type: "bar",
+        data: {
+            labels: monthLabels,
+            datasets: [
+                {
+                    label: "Income (₹)",
+                    data: incomeValues,
+                    backgroundColor: "rgba(0, 200, 150, 0.8)",
+                    borderRadius: 8,
+                    barPercentage: 0.45
+                },
+                {
+                    label: "Expense (₹)",
+                    data: expenseValues,
+                    backgroundColor: "rgba(255, 107, 107, 0.8)",
+                    borderRadius: 8,
+                    barPercentage: 0.45
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "bottom",    // ⬅️ legend below chart
+                    labels: {
+                        color: "#333",
+                        font: {
+                            size: legendFontSize,
+                            weight: "600"
+                        },
+                        boxWidth: legendBoxSize,
+                        boxHeight: legendBoxSize
                     }
-                ]
+                }
             },
-            options: {
-                responsive: true,
-                interaction: { mode: "index" },
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            color: "#333",
-                            font: { size: 13, weight: "600" }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: "rgba(0,0,0,0.7)",
-                        titleFont: { size: 13 },
-                        bodyFont: { size: 12 }
-                    }
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "#333" }
                 },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: "#333", font: { size: 12 } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: "rgba(0,0,0,0.05)" },
-                        ticks: { color: "#333", font: { size: 12 } }
-                    }
-                },
-                animation: {
-                    duration: 1200,
-                    easing: "easeOutQuart"
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(0,0,0,0.05)" },
+                    ticks: { color: "#333" }
                 }
             }
-        });
+        }
     });
+});
+
 </script>
 
 <style>
@@ -414,6 +410,12 @@
     .plotly-wrapper {
         width: 100%;
         overflow: hidden;
+    }
+
+    @media (max-width : 768px) {
+        #monthlyCompareChart{
+            height: 70% !important;
+        }
     }
 </style>
 

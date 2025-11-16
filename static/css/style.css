@@ -57,15 +57,14 @@ nav {
 }
 
 nav .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 20px;
+    box-sizing: border-box;
 }
 
 nav .logo img {
-    height: 36px;
+    height: 30px;        /* adjust this */
+    width: auto;         /* keeps proper ratio */
+    object-fit: contain; /* prevents stretching */
+    display: block;      /* avoids extra spacing */
 }
 
 /* MENU (Desktop) */

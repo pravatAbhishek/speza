@@ -74,10 +74,6 @@
             animation: float 2s ease-in-out infinite;
         }
 
-        .loader-logo img {
-            width: 48px;
-            height: 48px;
-        }
 
         .loader-text {
             font-size: 1.8rem;
@@ -134,7 +130,6 @@
     <!-- Page Loader -->
     <div id="pageLoader">
         <div class="loader-logo">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Speza Logo" />
             <h2 class="loader-text">Speza</h2>
         </div>
         <div class="loader-bar">
@@ -145,8 +140,7 @@
     <!-- Navbar -->
     <nav data-aos="fade-down">
         <div class="logo">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Speza Logo" />
-            Speza
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Speza Logo" height="150px" width="80px"/>
         </div>
 
         <!-- Hamburger -->

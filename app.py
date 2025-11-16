@@ -70,13 +70,30 @@ def dashboard():
     total_expense = df.loc[df["Type"] == "Expense", "Amount"].sum()
     balance = total_income - total_expense
 
-    # Mood logic
-    if total_expense > total_income:
-        mood = {"status": "bad", "text": "🔴 Caution! Expenses exceed income."}
-    elif abs(total_income - total_expense) < 2000:
-        mood = {"status": "neutral", "text": "🟡 You're spending close to your income."}
+# ---- Improved Financial Mood Logic ----
+    if total_income > 0:
+        savings_pct = ((total_income - total_expense) / total_income) * 100
+        spending_ratio = total_expense / total_income
     else:
-        mood = {"status": "good", "text": "🟢 Great! You're saving money."}
+        savings_pct = 0
+        spending_ratio = 1
+
+# Mood classification
+    if savings_pct < 0:
+        mood = {"status": "bad", "text": "🔴 You're overspending more than you earn."}
+
+    elif savings_pct < 10 or spending_ratio > 0.8:
+        mood = {"status": "risky", "text": "🟠 Savings are very low. Try reducing expenses."}
+
+    elif savings_pct < 30:
+        mood = {"status": "neutral", "text": "🟡 You're doing okay, but there's room to improve your savings."}
+
+    elif savings_pct < 50:
+        mood = {"status": "good", "text": "🟢 Good job! You're saving a healthy amount."}
+
+    else:
+        mood = {"status": "excellent", "text": "🟣 Excellent discipline! You're saving very well."}
+
 
     # Pie chart (Expense Breakdown)
     exp_df = df[df["Type"] == "Expense"]
