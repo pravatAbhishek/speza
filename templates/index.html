@@ -11,8 +11,10 @@
         <p class="hero-subtitle">
             Speza helps you visualize your income and expenses, uncover spending patterns, and make informed financial decisions — all in one clean, modern dashboard.
         </p>
-        <a href="{{ url_for('dashboard') }}" class="cta-btn">Go to Dashboard</a>
-        <a href="{{ url_for('add_expense') }}" class="cta-btn">Start Tracking</a>
+        <div class="btn-container">
+            <a href="{{ url_for('dashboard') }}" class="cta-btn">Go to Dashboard</a>
+            <a href="{{ url_for('add_expense') }}" class="cta-btn">Start Tracking</a>
+        </div>
     </div>
 
     <div class="hero-graphic" data-aos="fade-left">
@@ -206,6 +208,14 @@
         display: flex;
         justify-content: center; /* ensures centering */
         width: 100%;
+    }
+
+    .btn-container{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
     }
 }
 </style>
